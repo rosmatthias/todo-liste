@@ -1,6 +1,6 @@
 # 📋 To-Do Liste
 
-Eine moderne, interaktive To-Do Liste mit Datenbank-Persistierung.
+Eine moderne, interaktive To-Do Liste mit Datenbank.
 
 ## 🚀 Features
 

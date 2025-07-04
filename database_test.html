@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Datenbank Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      button {
+        background: #007cba;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #005a8a;
+      }
+      .result {
+        background: #f0f0f0;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 3px;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>To-Do App Datenbank Test</h1>
+
+    <div class="test-section">
+      <h2>1. Datenbank Schema Test</h2>
+      <button onclick="testDatabase()">Datenbank testen</button>
+      <div id="dbResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>2. Task Speichern Test</h2>
+      <input
+        type="text"
+        id="taskText"
+        placeholder="Task eingeben..."
+        value="Test Task"
+      />
+      <button onclick="saveTestTask()">Task speichern</button>
+      <div id="saveResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>3. Tasks Laden Test</h2>
+      <button onclick="loadTasks()">Tasks laden</button>
+      <div id="loadResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>4. Alle Tasks anzeigen</h2>
+      <button onclick="showAllTasks()">Alle Tasks anzeigen</button>
+      <div id="allTasksResult" class="result"></div>
+    </div>
+
+    <script>
+      async function testDatabase() {
+        try {
+          const response = await fetch("test_db.php");
+          const text = await response.text();
+          document.getElementById("dbResult").textContent = text;
+        } catch (error) {
+          document.getElementById("dbResult").textContent =
+            "Fehler: " + error.message;
+        }
+      }
+
+      async function saveTestTask() {
+        const taskText = document.getElementById("taskText").value;
+        try {
+          const response = await fetch("database_debug.php", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              action: "save_task",
+              taskId: 999,
+              text: taskText,
+              completed: "false",
+              type: "custom",
+            }),
+          });
+
+          const result = await response.json();
+          document.getElementById("saveResult").textContent = JSON.stringify(
+            result,
+            null,
+            2
+          );
+        } catch (error) {
+          document.getElementById("saveResult").textContent =
+            "Fehler: " + error.message;
+        }
+      }
+
+      async function loadTasks() {
+        try {
+          const response = await fetch("database_debug.php", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              action: "get_tasks",
+            }),
+          });
+
+          const result = await response.json();
+          document.getElementById("loadResult").textContent = JSON.stringify(
+            result,
+            null,
+            2
+          );
+        } catch (error) {
+          document.getElementById("loadResult").textContent =
+            "Fehler: " + error.message;
+        }
+      }
+
+      async function showAllTasks() {
+        try {
+          const response = await fetch("database_debug.php", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              action: "get_tasks",
+            }),
+          });
+
+          const result = await response.json();
+          let display = "Status: " + result.status + "\n";
+          display +=
+            "Anzahl Tasks: " +
+            (result.tasks ? result.tasks.length : 0) +
+            "\n\n";
+
+          if (result.tasks && result.tasks.length > 0) {
+            result.tasks.forEach((task) => {
+              display += `Task ${task.task_id}: "${task.task_text}" (${
+                task.task_type
+              }) - ${task.completed ? "Erledigt" : "Offen"}\n`;
+            });
+          } else {
+            display += "Keine Tasks gefunden.";
+          }
+
+          document.getElementById("allTasksResult").textContent = display;
+        } catch (error) {
+          document.getElementById("allTasksResult").textContent =
+            "Fehler: " + error.message;
+        }
+      }
+    </script>
+  </body>
+</html>
